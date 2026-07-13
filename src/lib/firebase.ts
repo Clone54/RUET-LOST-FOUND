@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,5 +15,11 @@ const app = initializeApp(firebaseConfig);
 const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID;
 
 export const auth = getAuth(app);
-export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
+
+// Use initializeFirestore with experimentalForceLongPolling to fix connection 
+// issues in certain environments like restricted iframes or proxies
+export const db = databaseId 
+  ? initializeFirestore(app, { experimentalForceLongPolling: true }, databaseId) 
+  : initializeFirestore(app, { experimentalForceLongPolling: true });
+
 export const googleProvider = new GoogleAuthProvider();
