@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -9,8 +9,14 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/explore');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +24,7 @@ export function Login() {
       setError('');
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/explore');
+      // Navigation is now handled by useEffect
     } catch (err: any) {
       setError('Failed to log in. Please check your credentials.');
     } finally {
@@ -26,10 +32,10 @@ export function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     try {
-      await signInWithGoogle();
-      navigate('/explore');
+      signInWithGoogle();
+      // Navigation is now handled by useEffect when redirect returns
     } catch (err) {
       setError('Failed to sign in with Google.');
     }

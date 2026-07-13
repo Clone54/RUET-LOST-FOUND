@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -10,8 +10,14 @@ export function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/explore');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +28,7 @@ export function Register() {
       await updateProfile(userCredential.user, {
         displayName: name
       });
-      navigate('/explore');
+      // Navigation is now handled by useEffect
     } catch (err: any) {
       setError('Failed to create an account. ' + (err.message || ''));
     } finally {
@@ -30,10 +36,10 @@ export function Register() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     try {
-      await signInWithGoogle();
-      navigate('/explore');
+      signInWithGoogle();
+      // Navigation is now handled by useEffect when redirect returns
     } catch (err) {
       setError('Failed to sign up with Google.');
     }
