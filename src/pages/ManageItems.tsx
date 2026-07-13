@@ -77,86 +77,71 @@ export function ManageItems() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
-                  <th className="px-6 py-4 font-medium">Item</th>
-                  <th className="px-6 py-4 font-medium">Type</th>
-                  <th className="px-6 py-4 font-medium">Date Posted</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {items.map(item => (
-                  <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.title} className="w-10 h-10 rounded-md object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-md bg-slate-100 flex items-center justify-center text-xs text-slate-400 flex-shrink-0">
-                            No Img
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium text-slate-900 line-clamp-1">{item.title}</p>
-                          <p className="text-xs text-slate-500 truncate">{item.category}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                        ${item.type === 'lost' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}
-                      `}>
-                        {item.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {format(new Date(item.createdAt), 'MMM d, yyyy')}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 text-sm font-medium
-                        ${item.status === 'resolved' ? 'text-slate-700' : 'text-blue-600'}
-                      `}>
-                        {item.status === 'resolved' && <CheckCircle className="w-4 h-4" />}
-                        <span className="capitalize">{item.status}</span>
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {item.status === 'active' && (
-                          <button
-                            onClick={() => handleResolve(item.id)}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors tooltip relative group"
-                            title={item.type === 'lost' ? 'Mark as Got' : 'Mark as Handed Over'}
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                        )}
-                        <Link
-                          to={`/items/${item.id}`}
-                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View Details"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete Post"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map(item => (
+            <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col transition-shadow hover:shadow-md">
+              <div className="relative h-48 bg-slate-100 flex-shrink-0">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                    <span className="text-sm font-medium">No Image</span>
+                  </div>
+                )}
+                <div className="absolute top-3 left-3 flex gap-2">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold capitalize shadow-sm
+                    ${item.type === 'lost' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}
+                  `}>
+                    {item.type}
+                  </span>
+                  {item.status === 'resolved' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-white shadow-sm">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Resolved
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-5 flex-grow flex flex-col">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-lg text-slate-900 line-clamp-1">{item.title}</h3>
+                </div>
+                <p className="text-xs text-slate-500 mb-4">{format(new Date(item.createdAt), 'MMM d, yyyy')} &bull; {item.category}</p>
+                
+                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {item.status === 'active' && (
+                      <button
+                        onClick={() => handleResolve(item.id)}
+                        className="text-xs font-medium text-emerald-600 hover:bg-emerald-50 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5"
+                        title={item.type === 'lost' ? 'Mark as Found' : 'Mark as Handed Over'}
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Resolve
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Link
+                      to={`/items/${item.id}`}
+                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="View Details"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Post"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

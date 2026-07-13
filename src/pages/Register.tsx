@@ -39,7 +39,11 @@ export function Register() {
   const handleGoogleLogin = () => {
     signInWithGoogle().catch((err) => {
       console.error(err);
-      setError('Failed to sign up with Google: ' + (err.message || ''));
+      if (err.message && err.message.includes('popup')) {
+        setError('Google sign-up popup was blocked or closed. If you are in the preview iframe, please open the app in a new tab (using the arrow icon in the top right) to use Google Sign-in.');
+      } else {
+        setError('Failed to sign up with Google: ' + (err.message || ''));
+      }
     });
   };
 

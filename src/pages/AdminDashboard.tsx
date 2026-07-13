@@ -176,40 +176,30 @@ export function AdminDashboard() {
       )}
       
       {activeTab === 'users' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Last Login</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {users.map((u, i) => (
-                  <tr key={u.uid || i}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{u.displayName || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{u.email || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'N/A'}
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">
-                      No users found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {users.map((u, i) => (
+            <div key={u.uid || i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-2">
+              <div>
+                <h3 className="font-semibold text-slate-900">{u.displayName || 'N/A'}</h3>
+                <p className="text-sm text-slate-500">{u.email || 'N/A'}</p>
+              </div>
+              <div className="mt-2 text-xs text-slate-500 grid grid-cols-2 gap-2">
+                <div>
+                  <span className="block font-medium text-slate-700">Joined</span>
+                  {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
+                </div>
+                <div>
+                  <span className="block font-medium text-slate-700">Last Login</span>
+                  {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+          ))}
+          {users.length === 0 && (
+            <div className="col-span-full py-12 text-center text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-100">
+              No users found.
+            </div>
+          )}
         </div>
       )}
     </div>
