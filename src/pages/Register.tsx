@@ -37,12 +37,10 @@ export function Register() {
   };
 
   const handleGoogleLogin = () => {
-    try {
-      signInWithGoogle();
-      // Navigation is now handled by useEffect when redirect returns
-    } catch (err) {
-      setError('Failed to sign up with Google.');
-    }
+    signInWithGoogle().catch((err) => {
+      console.error(err);
+      setError('Failed to sign up with Google: ' + (err.message || ''));
+    });
   };
 
   return (

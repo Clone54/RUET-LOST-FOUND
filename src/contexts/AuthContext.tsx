@@ -3,9 +3,10 @@ import {
   User, 
   onAuthStateChanged, 
   signOut,
-  signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  UserCredential
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 
@@ -13,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   logout: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<UserCredential>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,13 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return signOut(auth);
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      await signInWithRedirect(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-      throw error;
-    }
+  const signInWithGoogle = () => {
+    return signInWithPopup(auth, googleProvider);
   };
 
   return (

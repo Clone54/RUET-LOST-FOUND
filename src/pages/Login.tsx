@@ -33,12 +33,10 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    try {
-      signInWithGoogle();
-      // Navigation is now handled by useEffect when redirect returns
-    } catch (err) {
-      setError('Failed to sign in with Google.');
-    }
+    signInWithGoogle().catch((err) => {
+      console.error(err);
+      setError('Failed to sign in with Google: ' + (err.message || ''));
+    });
   };
 
   return (
