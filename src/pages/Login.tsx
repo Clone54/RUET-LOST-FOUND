@@ -28,14 +28,10 @@ export function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      setError('');
-      setLoading(true);
       await signInWithGoogle();
       navigate('/explore');
     } catch (err) {
       setError('Failed to sign in with Google.');
-    } finally {
-      setLoading(false);
     }
   };
 

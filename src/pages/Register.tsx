@@ -32,14 +32,10 @@ export function Register() {
 
   const handleGoogleLogin = async () => {
     try {
-      setError('');
-      setLoading(true);
       await signInWithGoogle();
       navigate('/explore');
     } catch (err) {
       setError('Failed to sign up with Google.');
-    } finally {
-      setLoading(false);
     }
   };
 
