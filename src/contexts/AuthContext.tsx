@@ -24,6 +24,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        try {
+          const { api } = await import('../lib/api');
+          await api.saveUser(result.user);
+        } catch (e) {
+          console.error("Failed to save user info to DB", e);
+        }
+      }
+    }).catch((error) => {
+      console.error("Error with redirect sign-in:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       setLoading(false);
@@ -46,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
