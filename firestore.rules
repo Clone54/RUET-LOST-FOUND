@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'rlf@ruet.ac.bd';
+    }
+
+    match /items/{itemId} {
+      // Anyone can read items (for the home page stats and listings)
+      allow read: if true;
+      // Only authenticated users can create items
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      // Only the author or admin can update or delete their item
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    match /comments/{commentId} {
+      // Anyone can read comments
+      allow read: if true;
+      // Only authenticated users can create comments
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      // Only the author or admin can update or delete their comment
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    match /users/{userId} {
+      // Admin can read all users, users can read their own data
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can update their own data
+      allow write: if isOwner(userId);
+    }
+
+    match /settings/{document=**} {
+      // Anyone can read site settings
+      allow read: if true;
+      // Only admin can update site settings
+      allow write: if isAdmin();
+    }
+  }
+}
