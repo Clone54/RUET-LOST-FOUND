@@ -82,7 +82,7 @@ export function ManageItems() {
             <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col transition-shadow hover:shadow-md">
               <div className="relative h-48 bg-slate-100 flex-shrink-0">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                     <span className="text-sm font-medium">No Image</span>

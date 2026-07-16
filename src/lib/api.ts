@@ -12,7 +12,8 @@ import {
   serverTimestamp,
   deleteField,
   getCountFromServer,
-  limit
+  limit,
+  startAfter
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Item, Comment, ItemType, ItemStatus } from '../types';
@@ -21,7 +22,7 @@ const ITEMS_COLLECTION = 'items';
 const COMMENTS_COLLECTION = 'comments';
 
 export const api = {
-  async getItems(filters?: { type?: ItemType, category?: string }) {
+  async getItems(filters?: { type?: ItemType, category?: string, lastVisibleId?: string, limitCount?: number }) {
     let q = query(collection(db, ITEMS_COLLECTION), orderBy('createdAt', 'desc'));
     
     if (filters?.type) {
@@ -29,6 +30,17 @@ export const api = {
     }
     if (filters?.category) {
       q = query(q, where('category', '==', filters.category));
+    }
+
+    if (filters?.lastVisibleId) {
+      const lastDocSnap = await getDoc(doc(db, ITEMS_COLLECTION, filters.lastVisibleId));
+      if (lastDocSnap.exists()) {
+        q = query(q, startAfter(lastDocSnap));
+      }
+    }
+    
+    if (filters?.limitCount) {
+      q = query(q, limit(filters.limitCount));
     }
     
     const snapshot = await getDocs(q);

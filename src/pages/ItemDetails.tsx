@@ -100,7 +100,7 @@ export function ItemDetails() {
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             {item.imageUrl && (
               <div className="h-64 sm:h-96 w-full bg-slate-100">
-                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
               </div>
             )}
             

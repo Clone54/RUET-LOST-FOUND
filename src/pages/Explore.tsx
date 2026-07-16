@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, Filter, MapPin, Calendar, CheckCircle } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, CheckCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { api } from '../lib/api';
 import { Item, ItemType } from '../types';
@@ -12,32 +12,58 @@ export function Explore() {
   
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 8;
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<ItemType | 'all'>(initialType);
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        setLoading(true);
-        // If typeFilter is 'all', we don't pass type to API
-        const filters: any = {};
-        if (typeFilter !== 'all') filters.type = typeFilter;
-        if (categoryFilter !== 'all') filters.category = categoryFilter;
-        
-        const data = await api.getItems(filters);
-        setItems(data);
-      } catch (error) {
-        console.error("Failed to fetch items", error);
-        setItems([]);
-      } finally {
-        setLoading(false);
+    const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const fetchItems = useCallback(async (isLoadMore = false) => {
+    try {
+      if (isLoadMore) setLoadingMore(true);
+      else setLoading(true);
+      
+      const filters: any = {};
+      if (typeFilter !== 'all') filters.type = typeFilter;
+      if (categoryFilter !== 'all') filters.category = categoryFilter;
+      
+      // If there's no search query, we paginate. If there is, we fetch all to allow client-side filtering.
+      if (!debouncedSearchQuery) {
+        filters.limitCount = ITEMS_PER_PAGE;
+        if (isLoadMore && items.length > 0) {
+          filters.lastVisibleId = items[items.length - 1].id;
+        }
       }
-    };
-    
-    fetchItems();
-  }, [typeFilter, categoryFilter]);
+      
+      const data = await api.getItems(filters);
+      
+      if (isLoadMore) {
+        setItems(prev => [...prev, ...data]);
+      } else {
+        setItems(data);
+      }
+      
+      setHasMore(data.length === ITEMS_PER_PAGE && !debouncedSearchQuery);
+    } catch (error) {
+      console.error("Failed to fetch items", error);
+      if (!isLoadMore) setItems([]);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [typeFilter, categoryFilter, debouncedSearchQuery, items]);
+
+  useEffect(() => {
+    fetchItems(false);
+  }, [typeFilter, categoryFilter, debouncedSearchQuery]);
 
   const handleTypeChange = (type: ItemType | 'all') => {
     setTypeFilter(type);
@@ -50,8 +76,8 @@ export function Explore() {
   };
 
   const filteredItems = items.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    item.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || 
+    item.shortDescription.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   return (
@@ -138,7 +164,7 @@ export function Explore() {
             <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
               <div className="h-48 bg-slate-100 relative">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                     No image
@@ -181,6 +207,25 @@ export function Explore() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && hasMore && filteredItems.length > 0 && !debouncedSearchQuery && (
+        <div className="mt-12 flex justify-center">
+          <button
+            onClick={() => fetchItems(true)}
+            disabled={loadingMore}
+            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load More'
+            )}
+          </button>
         </div>
       )}
     </div>
